@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{padding: 0;margin: 0;}
+        ul li{float: left;list-style-type: none}
+        div.bar{
+            margin: 50px auto;
+            width: 520px;
+            height:280px;
+            border: 1px solid black;
+            position: relative;
+            overflow: hidden;
+        }
+        div.bar ul.carousel{
+            width: 700%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: -520px;
+        }
+        div.bar ul.carousel li {
+            width: 520px;
+            height: 100%;
+        }
+        div.bar ul.carousel li a{
+            height: 100%;
+            width: 100%;
+            display: block;
+        }
+        div.bar ul.carousel li a img{
+            width: 100%;
+            height: 100%;
+        }
+        a.left,a.right{
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: black;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font: bold 25px/50px '';
+            opacity: 0.4;
+            top: 50%;
+            margin-top: -25px;
+            z-index: 1;
+        }
+        a.left:hover,a.right:hover{
+            opacity: 0.6;
+        }
+        a.left{
+            left: 0;
+        }
+        a.right{
+            right: 0;
+        }
+        div.bar ul.list{
+            position: absolute;
+            left: 50%;
+            bottom: 20px;
+            margin-left: -35px;
+        }
+        div.bar ul.list li{
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 1px solid cyan;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        div.bar ul.list li:first-child~li{
+            margin-left: 5px;
+        }
+        div.bar ul.list li.red{
+            background: red;
+        }
+    </style>
+</head>
+<body>
+<div class="bar">
+    <a href="javascript:;" class="left"><</a>
+    <a href="javascript:;" class="right">></a>
+    <ul class="carousel">
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000000QM7IT44zskP.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000003w4dA62pSQTQ.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000002yFrNU0RoVCG.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000001EuOOn3GdEbF.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000003uFabC4BZpYO.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000000QM7IT44zskP.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://y.gtimg.cn/music/photo_new/T003R720x288M000003w4dA62pSQTQ.jpg" alt=""></a></li>
+    </ul>
+    <ul class="list">
+        <li class="red"></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+</div>
+</body>
+<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+    /**
+     *
+     *  定义一个轮播图对象
+     * @param carousel     必填（类名，id名，选择器）
+     * @param left         选填  不填写false
+     * @param right        选填  不填写false
+     * @param list         选填  不填写false
+     * @param time         选填，默认2s
+     */
+    function Carousel(carousel,left,right,list,time) {
+        this.carousel = document.querySelector(carousel);
+        if(left){
+            this.left = document.querySelector(left);
+        }
+        if(list){
+            this.lis = document.querySelector(list).querySelectorAll('li');
+        }
+
+        if(right){
+            this.right = document.querySelector(right);
+        }
+        this.box = this.carousel.parentNode;
+        this.width = this.carousel.children[0].offsetWidth;
+        if(time){
+            this.time = time;
+        }else{
+            this.time = 1000;
+        }
+    }
+    Carousel.prototype.autoplay = function () {
+        if(this.carousel.index == undefined){
+            this.carousel.index = 1;
+        }
+        var that = this;
+        clearInterval(this.timer);
+        this.timer = setInterval(function () {
+            that.carousel.index++;
+            that.move(that);
+        },this.time)
+    };
+
+    /*图片移动*/
+    Carousel.prototype.move = function (that) {
+        $(that.carousel).animate({left:-that.width*that.carousel.index},function () {
+            if(that.carousel.index == that.carousel.children.length-1){
+                that.carousel.index =1;
+                $(that.carousel).css('left',-(that.carousel.index)*that.width);
+            }
+            if(that.carousel.index ==0){
+                that.carousel.index =that.carousel.children.length-2;
+                $(that.carousel).css('left',-(that.carousel.index)*that.width);
+            }
+            if(that.lis){
+                $(that.lis).removeClass();
+                $(that.lis[(that.carousel.index)-1]).addClass('red');
+            }
+        });
+    };
+
+    Carousel.prototype.initAutoplay = function () {
+        var that = this;
+        this.box.onmouseenter = function(){
+            clearInterval(that.timer);
+        };
+        this.box.onmouseleave = function(){
+            that.autoplay();
+        }
+    };
+
+    Carousel.prototype.pageChange = function () {
+        var that = this;
+        this.left.onclick = function () {
+            clearInterval(this.timer);
+            this.timer = setTimeout(function () {
+                if(that.carousel.index<0){
+                    return
+                }
+                that.carousel.index--;
+                that.move(that);
+            },500);
+        };
+        this.right.onclick = function (){
+            clearInterval(this.timer);
+            this.timer = setTimeout(function () {
+                if(that.carousel.index>that.carousel.children.length-2){
+                    return
+                }
+                that.carousel.index++;
+                that.move(that);
+            },500);
+        }
+    };
+
+    Carousel.prototype.switch = function () {
+        var that = this;
+        for(var i = 0;i<this.lis.length;i++){
+            this.lis[i].index = i;
+        }
+        $(this.lis).on('click',function () {
+            that.carousel.index = this.index+1;
+            that.move(that);
+        })
+    };
+    var carousel1 = new Carousel('.carousel','.left','.right','.list',1000);
+    carousel1.autoplay();
+    carousel1.initAutoplay();
+    if(carousel1.left || carousel1.right){
+        carousel1.pageChange();
+    }
+    if(carousel1.lis){
+        carousel1.switch();
+    }
+</script>
+</html>
